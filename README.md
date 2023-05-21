@@ -1,23 +1,23 @@
 # deposito-de-arquivos
 
 <p align="center">
-  <img alt="GitHub language count" src="https://img.shields.io/github/languages/count/caiovinisl/metodos-hashing?color=%2304D361">
+  <img alt="GitHub language count" src="https://img.shields.io/github/languages/count/caiovinisl/deposito-de-arquivos?color=%2304D361">
 
-  <img alt="Repository size" src="https://img.shields.io/github/repo-size/caiovinisl/metodos-hashing">
+  <img alt="Repository size" src="https://img.shields.io/github/repo-size/caiovinisl/deposito-de-arquivos">
   
   <a href="https://github.com/caiovinisl/metodos-hashing/commits/main">
-    <img alt="GitHub last commit" src="https://img.shields.io/github/last-commit/caiovinisl/metodos-hashing">
+    <img alt="GitHub last commit" src="https://img.shields.io/github/last-commit/caiovinisl/deposito-de-arquivos">
   </a>
    
    <a href="https://github.com/caiovinisl/metodos-hashing/stargazers">
-    <img alt="Stargazers" src="https://img.shields.io/github/stars/caiovinisl/metodos-hashing?style=social">
+    <img alt="Stargazers" src="https://img.shields.io/github/stars/caiovinisl/deposito-de-arquivos?style=social">
   </a>
   
  
 </p>
 
 <h4 align="center"> 
-	🚧 Métodos de Hashing 🚧
+	🚧 Depósito de Arquivos 🚧
 </h4>
 
 <p align="center">
