@@ -1,2 +1,77 @@
 # deposito-de-arquivos
-Servidor de arquivos usando sockets para matéria MATA59 - Redes de Computadores da Universidade Federal da Bahia
+
+<p align="center">
+  <img alt="GitHub language count" src="https://img.shields.io/github/languages/count/caiovinisl/metodos-hashing?color=%2304D361">
+
+  <img alt="Repository size" src="https://img.shields.io/github/repo-size/caiovinisl/metodos-hashing">
+  
+  <a href="https://github.com/caiovinisl/metodos-hashing/commits/main">
+    <img alt="GitHub last commit" src="https://img.shields.io/github/last-commit/caiovinisl/metodos-hashing">
+  </a>
+   
+   <a href="https://github.com/caiovinisl/metodos-hashing/stargazers">
+    <img alt="Stargazers" src="https://img.shields.io/github/stars/caiovinisl/metodos-hashing?style=social">
+  </a>
+  
+ 
+</p>
+
+<h4 align="center"> 
+	🚧 Métodos de Hashing 🚧
+</h4>
+
+<p align="center">
+	<img alt="Status Em Desenvolvimento" src="https://img.shields.io/badge/STATUS-EM%20DESENVOLVIMENTO-green">
+	<!-- <img alt="Status Concluído" src="https://img.shields.io/badge/STATUS-CONCLU%C3%8DDO-brightgreen"> -->
+</p>
+
+<p align="center">
+ <a href="#-sobre-o-projeto">Sobre</a> •
+ <a href="#-funcionalidades">Funcionalidades</a> •
+ <a href="#-como-executar-o-projeto">Como executar</a> • 
+ <a href="#-tecnologias">Tecnologias</a>
+</p>
+
+## 💻 Sobre o projeto
+
+📄 Servidor de arquivos usando sockets.
+
+Projeto desenvolvido durante a matéria MATA59 - Redes de Computadores da Universidade Federal da Bahia pelo professor Gustavo Bittencurt.
+
+---
+
+## ⚙️ Funcionalidades
+
+- [x] Servidor
+- [x] Cliente
+
+---
+
+## 🛣️ Como executar o projeto
+
+#### 🎲 Rodando a aplicação
+
+```bash
+
+# Clone este repositório
+$ git clone https://github.com/caiovinisl/deposito-de-arquivos.git
+
+# Acesse a pasta do projeto no terminal/cmd
+$ cd deposito-de-arquivos
+
+# Execute primeiro o servidor
+$ g++ alocacaoEstatica.cpp -std=c++17 -o alocacaoEstatica
+
+# Certifique-se de executar primeiro o servidor
+$ python server.py
+
+# Em seguida, execute o cliente
+$ python client.py
+
+```
+
+## 🛠 Tecnologias
+
+- **[Python](https://www.python.org/)**
+
+---
