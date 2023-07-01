@@ -44,6 +44,7 @@ Projeto desenvolvido durante a matéria MATA59 - Redes de Computadores da Univer
 
 - [x] Servidor
 - [x] Cliente
+- [x] Proxy
 
 ---
 
@@ -61,6 +62,9 @@ $ cd deposito-de-arquivos
 
 # Certifique-se de executar primeiro o servidor
 $ python server.py
+
+# Depois execute o proxy
+$ python proxy.py
 
 # Em seguida, execute o cliente
 $ python client.py
