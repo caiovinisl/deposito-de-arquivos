@@ -1,3 +1,5 @@
+# proxy.py
+
 import socket
 import threading
 import random
@@ -14,50 +16,64 @@ def handle_client(client_socket):
 
     if request_type == "deposit":
         server_socket = get_random_server_socket()
-        server_socket.sendall(b"deposit")
+        if server_socket:
+            server_socket.sendall(b"deposit")
 
-        file_name = client_socket.recv(1024).decode().strip()
-        server_socket.sendall(file_name.encode())
+            file_name = client_socket.recv(1024).decode().strip()
+            server_socket.sendall(file_name.encode())
 
-        tolerance = client_socket.recv(1024).decode().strip()
-        server_socket.sendall(tolerance.encode())
+            tolerance = client_socket.recv(1024).decode().strip()
+            server_socket.sendall(tolerance.encode())
 
-        # Enviar o conteúdo do arquivo ao servidor
-        while True:
-            data = client_socket.recv(1024)
-            if not data:
-                break
-            server_socket.sendall(data)
+            # Enviar o conteúdo do arquivo ao servidor
+            while True:
+                data = client_socket.recv(1024)
+                if not data:
+                    break
+                server_socket.sendall(data)
 
-        response = server_socket.recv(1024).decode().strip()
-        client_socket.sendall(response.encode())
+            response = server_socket.recv(1024).decode().strip()
+            client_socket.sendall(response.encode())
+        else:
+            client_socket.sendall(b"No server available.")
 
     elif request_type == "recovery":
         server_socket = get_random_server_socket()
-        server_socket.sendall(b"recovery")
+        if server_socket:
+            server_socket.sendall(b"recovery")
 
-        file_name = client_socket.recv(1024).decode().strip()
-        server_socket.sendall(file_name.encode())
+            file_name = client_socket.recv(1024).decode().strip()
+            server_socket.sendall(file_name.encode())
 
-        response = server_socket.recv(1024).decode().strip()
-        client_socket.sendall(response.encode())
+            response = server_socket.recv(1024).decode().strip()
+            client_socket.sendall(response.encode())
 
-        if response == "File recovered successfully.":
-            # Enviar o arquivo de volta para o cliente
-            while True:
-                data = server_socket.recv(1024)
-                if not data:
-                    break
-                client_socket.sendall(data)
+            if response == "File recovered successfully.":
+                # Enviar o arquivo de volta para o cliente
+                while True:
+                    data = server_socket.recv(1024)
+                    if not data:
+                        break
+                    client_socket.sendall(data)
+        else:
+            client_socket.sendall(b"No server available.")
 
     client_socket.close()
 
 
 def get_random_server_socket():
+    if not SERVER_ADDRESSES:
+        return None
+
     server_address = random.choice(SERVER_ADDRESSES)
     server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    server_socket.connect(server_address)
-    return server_socket
+    try:
+        server_socket.connect(server_address)
+        return server_socket
+    except ConnectionRefusedError:
+        print(f"Connection refused to server {server_address}")
+        SERVER_ADDRESSES.remove(server_address)
+        return get_random_server_socket()
 
 
 def main():

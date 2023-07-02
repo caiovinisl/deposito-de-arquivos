@@ -11,7 +11,18 @@ def deposit_file(file_name, tolerance):
         client_socket.recv(1024)  # Aguardar confirmação do proxy
 
         client_socket.sendall(file_name.encode())
-        client_socket.sendall(tolerance.encode())
+
+        tolerance_str = str(tolerance)
+        client_socket.sendall(tolerance_str.encode())
+
+        try:
+            response = client_socket.recv(1024).decode()
+            if response == "File deposited successfully.":
+                print("File deposited successfully.")
+            else:
+                print("File deposit failed.")
+        except BrokenPipeError:
+            print("Connection lost. File deposit failed.")
 
         # Enviar o conteúdo do arquivo para o proxy
         with open(file_name, "rb") as file:
