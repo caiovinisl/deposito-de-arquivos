@@ -5,24 +5,25 @@ import threading
 import random
 
 PROXY_ADDRESS = ("localhost", 9000)
-SERVER_ADDRESSES = [("localhost", 8001), ("localhost", 8002), ("localhost", 8003)]
+SERVER_ADDRESSES = [("localhost", 8000)]
 
 
 def handle_client(client_socket):
     print("Handling client request")
 
-    request_type = client_socket.recv(1024).decode().strip()
-    print(f"Received request type: {request_type}")
+    request = client_socket.recv(1024).decode().split()
+    print(request)
+    print(f"Received request type: {request[0]}")
 
-    if request_type == "deposit":
+    if request[0] == "deposit":
         server_socket = get_random_server_socket()
         if server_socket:
-            server_socket.sendall(b"deposit")
+            server_socket.sendall(b"deposit ")
 
-            file_name = client_socket.recv(1024).decode().strip()
+            file_name = request[1] + ' '
             server_socket.sendall(file_name.encode())
 
-            tolerance = client_socket.recv(1024).decode().strip()
+            tolerance = request[2]
             server_socket.sendall(tolerance.encode())
 
             # Enviar o conteúdo do arquivo ao servidor
@@ -37,12 +38,12 @@ def handle_client(client_socket):
         else:
             client_socket.sendall(b"No server available.")
 
-    elif request_type == "recovery":
+    elif request[0] == "recovery":
         server_socket = get_random_server_socket()
         if server_socket:
-            server_socket.sendall(b"recovery")
+            server_socket.sendall(b"recovery ")
 
-            file_name = client_socket.recv(1024).decode().strip()
+            file_name = request[1]
             server_socket.sendall(file_name.encode())
 
             response = server_socket.recv(1024).decode().strip()

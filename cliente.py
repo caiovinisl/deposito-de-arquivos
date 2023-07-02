@@ -6,10 +6,9 @@ PROXY_ADDRESS = ("localhost", 9000)
 def deposit_file(file_name, tolerance):
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as client_socket:
         client_socket.connect(PROXY_ADDRESS)
-        client_socket.sendall(b"deposit")
+        client_socket.sendall(b"deposit ")
 
-        client_socket.recv(1024)  # Aguardar confirmação do proxy
-
+        file_name = file_name + ' '
         client_socket.sendall(file_name.encode())
 
         tolerance_str = str(tolerance)

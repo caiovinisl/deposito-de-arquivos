@@ -8,16 +8,13 @@ SERVER_ADDRESS = ("localhost", 8000)
 DATA_DIR = "data/"
 
 
-def handle_deposit(client_socket):
+def handle_deposit(client_socket, filename, tolerance):
     print("Handling deposit request")
 
-    file_name = client_socket.recv(1024).decode()
-    print(f"Received file name: {file_name}")
-
-    tolerance = int(client_socket.recv(1024).decode())
+    print(f"Received file name: {filename}")
     print(f"Received tolerance: {tolerance}")
 
-    file_path = os.path.join(DATA_DIR, file_name)
+    file_path = os.path.join(DATA_DIR, filename)
     print(f"File path: {file_path}")
 
     # Ler o conteúdo do arquivo
@@ -39,13 +36,12 @@ def handle_deposit(client_socket):
     client_socket.close()
 
 
-def handle_recovery(client_socket):
+def handle_recovery(client_socket, filename):
     print("Handling recovery request")
 
-    file_name = client_socket.recv(1024).decode()
-    print(f"Received file name: {file_name}")
+    print(f"Received file name: {filename}")
 
-    file_path = os.path.join(DATA_DIR, file_name)
+    file_path = os.path.join(DATA_DIR, filename)
     print(f"File path: {file_path}")
 
     # Verificar se existem réplicas do arquivo
@@ -80,13 +76,14 @@ def main():
 
     while True:
         client_socket, client_address = server_socket.accept()
-        request_type = client_socket.recv(1024).decode()
-        print(f"Received request type: {request_type}")
+        request = client_socket.recv(1024).decode().split()
+        print(request)
+        print(f"Received request type: {request[0]}")
 
-        if request_type == "deposit":
-            handle_deposit(client_socket)
-        elif request_type == "recovery":
-            handle_recovery(client_socket)
+        if request[0] == "deposit":
+            handle_deposit(client_socket, request[1], request[2])
+        elif request[0] == "recovery":
+            handle_recovery(client_socket, request[1])
         else:
             client_socket.sendall(b"Invalid request.")
             client_socket.close()
