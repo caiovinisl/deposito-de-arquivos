@@ -44,6 +44,8 @@ Projeto desenvolvido durante a matéria MATA59 - Redes de Computadores da Univer
 
 - [x] Servidor
 - [x] Cliente
+	- [x] Depositar arquivos
+	- [x] Recuperar arquivos
 - [x] Proxy
 
 ---
