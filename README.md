@@ -43,10 +43,11 @@ Projeto desenvolvido durante a matéria MATA59 - Redes de Computadores da Univer
 ## ⚙️ Funcionalidades
 
 - [x] Servidor
+- [x] Proxy
 - [x] Cliente
 	- [x] Depositar arquivos
 	- [x] Recuperar arquivos
-- [x] Proxy
+
 
 ---
 
