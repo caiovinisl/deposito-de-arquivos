@@ -8,7 +8,7 @@ def deposit_file(file_name, tolerance):
         client_socket.connect(PROXY_ADDRESS)
         client_socket.sendall(b"deposit ")
 
-        file_name = file_name + ' '
+        file_name = file_name + " "
         client_socket.sendall(file_name.encode())
 
         tolerance_str = str(tolerance)

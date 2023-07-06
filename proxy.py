@@ -11,6 +11,7 @@ SERVER_ADDRESSES = [("localhost", 8000)]
 def handle_client(client_socket):
     print("Handling client request")
 
+    # Recebendo a requisição do cliente (Camada de Aplicação)
     request = client_socket.recv(1024).decode().split()
     print(request)
     print(f"Received request type: {request[0]}")
@@ -18,39 +19,47 @@ def handle_client(client_socket):
     if request[0] == "deposit":
         server_socket = get_random_server_socket()
         if server_socket:
+            # Enviando a requisição para o servidor (Camada de Transporte)
             server_socket.sendall(b"deposit ")
 
-            file_name = request[1] + ' '
+            file_name = request[1] + " "
             server_socket.sendall(file_name.encode())
 
             tolerance = request[2]
             server_socket.sendall(tolerance.encode())
 
-            # Enviar o conteúdo do arquivo ao servidor
+            # Enviando o conteúdo do arquivo ao servidor (Camada de Transporte)
             while True:
                 data = client_socket.recv(1024)
                 if not data:
                     break
                 server_socket.sendall(data)
 
+            # Recebendo a resposta do servidor (Camada de Transporte)
             response = server_socket.recv(1024).decode().strip()
-            client_socket.sendall(response.encode())
+            client_socket.sendall(
+                response.encode()
+            )  # Enviando a resposta ao cliente (Camada de Transporte)
         else:
             client_socket.sendall(b"No server available.")
 
     elif request[0] == "recovery":
         server_socket = get_random_server_socket()
         if server_socket:
+            # Enviando a requisição para o servidor (Camada de Transporte)
             server_socket.sendall(b"recovery ")
 
             file_name = request[1]
             server_socket.sendall(file_name.encode())
 
+            # Recebendo a resposta do servidor (Camada de Transporte)
             response = server_socket.recv(1024).decode().strip()
-            client_socket.sendall(response.encode())
+            client_socket.sendall(
+                response.encode()
+            )  # Enviando a resposta ao cliente (Camada de Transporte)
 
             if response == "File recovered successfully.":
-                # Enviar o arquivo de volta para o cliente
+                # Enviando o arquivo de volta para o cliente (Camada de Transporte)
                 while True:
                     data = server_socket.recv(1024)
                     if not data:
@@ -69,6 +78,7 @@ def get_random_server_socket():
     server_address = random.choice(SERVER_ADDRESSES)
     server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     try:
+        # Estabelecendo a conexão com o servidor (Camada de Transporte)
         server_socket.connect(server_address)
         return server_socket
     except ConnectionRefusedError:
@@ -85,6 +95,8 @@ def main():
 
     while True:
         client_socket, client_address = proxy_socket.accept()
+
+        # Iniciando uma nova thread para lidar com a requisição do cliente (Camada de Transporte)
         threading.Thread(target=handle_client, args=(client_socket,)).start()
 
 
