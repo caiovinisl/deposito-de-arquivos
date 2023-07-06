@@ -21,7 +21,7 @@ def toArray (chunk):
 
 def receive_message():
     while True:
-        try:
+        # try:
             message = client.recv(1024).decode()
             if message == 'agent':
                 client.send(agent.encode())
@@ -30,8 +30,8 @@ def receive_message():
                 msg = toArray(message)
                 op = msg[0]
                 file_name = msg[1]
-                level = msg[2]
-                file_size = msg[3]
+                level = int(msg[2])
+                file_size = int(msg[3])
 
                 if(msg[0] == "0"):
                     print("OP 0")
@@ -56,7 +56,7 @@ def receive_message():
                       
                       
                 
-        except:
-            print('[ERRO]')
+        # except:
+        #     print('[ERRO]')
 
 receive_message()
