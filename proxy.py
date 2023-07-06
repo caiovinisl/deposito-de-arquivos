@@ -1,8 +1,8 @@
 import socket
 import threading
 
-HOST = "127.0.0.1"
-PORT = 8080
+HOST = "localhost"
+PORT = 8081
 
 server = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
 server.bind((HOST,PORT))
@@ -16,11 +16,11 @@ serversNames = []
 
 def globalMessage(message):
    
-   txt = servers[0]
+   txt = servers[-1]
    txt.send(message)
    
 def globalM(message):
-   txt = clients[0]
+   txt = clients[-1]
    txt.send(message)
 
 def handleMessages(client,agent):
@@ -29,9 +29,13 @@ def handleMessages(client,agent):
            
             if agent == "client":
                receiveMessageFromClient = client.recv(1024).decode()
+               print("receiveMessageFromClient")
+               print(receiveMessageFromClient)
                globalMessage(f'{receiveMessageFromClient}'.encode())
             elif agent == "server":
                receiveMessageFromClient = client.recv(1024).decode()
+               print("receiveMessageFromClient")
+               print(receiveMessageFromClient)
                globalM(f'{receiveMessageFromClient}'.encode())
         except:
             client.close()
@@ -57,6 +61,11 @@ def initialConnection():
                user_thread = threading.Thread(target=handleMessages,args=(client,agent,))
                user_thread.start()
         except:
+            quit()
             pass
 
-initialConnection()
+try:
+   initialConnection()
+except:
+   print('error')
+   quit()
