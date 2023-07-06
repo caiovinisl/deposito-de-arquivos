@@ -1,14 +1,17 @@
 import socket
 import threading
 
-ServerIP = "127.0.0.1"
+HOST = "127.0.0.1"
 PORT = 8080
 
 client = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
+agent = "server"
+
+files = []
+
 try:
-    agent = "server"
-    client.connect((ServerIP,PORT))
-    print(f'Connected Successfully to {ServerIP}:{PORT}')
+    client.connect((HOST,PORT))
+    print(f'Connected Successfully to {HOST}:{PORT}')
 except:
     print(f'ERROR: Please review your host')
 
@@ -16,35 +19,44 @@ def toArray (chunk):
    array = chunk.split('|')
    return array
 
-def receiveMessage():
+def receive_message():
     while True:
         try:
-            message = client.recv(2048).decode('ascii')
+            message = client.recv(1024).decode()
             if message == 'agent':
-                client.send(agent.encode('ascii'))
+                client.send(agent.encode())
             else:
                 print("Mensagem recebida e armazenada: "+ message)
                 msg = toArray(message)
+                op = msg[0]
+                file_name = msg[1]
+                level = msg[2]
+                file_size = msg[3]
+
                 if(msg[0] == "0"):
-                  arquivos.append(msg[1])
-                  dono.append(msg[2])
-                  mensg = 'Arquivo "'+ msg[1] +'" armazenado com sucesso'
-                  client.send(mensg.encode('ascii'))
+                    print("OP 0")
+                    files.append(msg[1])
+
+                    count = 0
+
+                    while count <= (file_size / 1024):
+                        file_chunk = client.recv(1024).decode()
+                        print(file_chunk)
+                        count += 1
+
+                    mensg = 'Arquivo "'+ msg[1] +'" armazenado com sucesso'
+                    client.send(mensg.encode())
                   
                 elif (msg[0] == "1"):
-                   if msg[1] in arquivos:
-                      mensg = 'Arquivo "'+ arquivos[arquivos.index(msg[1])] +'" recuperado com sucesso' 
-                      client.send(mensg.encode('ascii'))
-                   if msg[1] not in arquivos: 
-                      client.send('Arquivo não encontrado'.encode('ascii'))
+                   if msg[1] in files:
+                      mensg = 'Arquivo "'+ files[files.index(msg[1])] +'" recuperado com sucesso' 
+                      client.send(mensg.encode())
+                   if msg[1] not in files: 
+                      client.send('Arquivo não encontrado'.encode())
                       
                       
                 
         except:
             print('[ERRO]')
 
-arquivos = []
-dono = []
-thread1 = threading.Thread(target=receiveMessage,args=()) 
-
-thread1.start()
+receive_message()

@@ -28,11 +28,11 @@ def handleMessages(client,agent):
         try:
            
             if agent == "client":
-               receiveMessageFromClient = client.recv(2048).decode('ascii')
-               globalMessage(f'{receiveMessageFromClient}'.encode('ascii'))
+               receiveMessageFromClient = client.recv(1024).decode()
+               globalMessage(f'{receiveMessageFromClient}'.encode())
             elif agent == "server":
-               receiveMessageFromClient = client.recv(2048).decode('ascii')
-               globalM(f'{receiveMessageFromClient}'.encode('ascii'))
+               receiveMessageFromClient = client.recv(1024).decode()
+               globalM(f'{receiveMessageFromClient}'.encode())
         except:
             client.close()
 
@@ -43,8 +43,8 @@ def initialConnection():
             client, address = server.accept()
             print(f"New Connetion: {str(address)}")
             
-            client.send('agent'.encode('ascii'))
-            agent = client.recv(2048).decode('ascii')
+            client.send('agent'.encode())
+            agent = client.recv(1024).decode()
             
             if agent == "client":
                clients.append(client)
