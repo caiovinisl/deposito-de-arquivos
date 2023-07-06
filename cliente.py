@@ -1,87 +1,63 @@
 import socket
+import threading
+import os
+import uuid
 
-PROXY_ADDRESS = ("localhost", 9000)
+HOST = "127.0.0.1"
+PORT = 8080
 
+client = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
+try:
+    agent = "client"
+    client.connect((HOST,PORT))
+    print(f'Connected Successfully to {HOST}:{PORT}')
+except:
+    print(f'ERROR: Please review your host: {HOST}:{PORT}')
 
-def deposit_file(file_name, tolerance):
-    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as client_socket:
-        client_socket.connect(PROXY_ADDRESS)
-        client_socket.sendall(b"deposit ")
-
-        file_name = file_name + ' '
-        client_socket.sendall(file_name.encode())
-
-        tolerance_str = str(tolerance)
-        client_socket.sendall(tolerance_str.encode())
-
-        try:
-            response = client_socket.recv(1024).decode()
-            if response == "File deposited successfully.":
-                print("File deposited successfully.")
-            else:
-                print("File deposit failed.")
-        except BrokenPipeError:
-            print("Connection lost. File deposit failed.")
-
-        # Enviar o conteúdo do arquivo para o proxy
-        with open(file_name, "rb") as file:
-            while True:
-                data = file.read(1024)
-                if not data:
-                    break
-                client_socket.sendall(data)
-
-        response = client_socket.recv(1024).decode()
-        if response == "File deposited successfully.":
-            print("File deposited successfully.")
-        else:
-            print("File deposit failed.")
-
-
-def recover_file(file_name):
-    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as client_socket:
-        client_socket.connect(PROXY_ADDRESS)
-        client_socket.sendall(b"recovery")
-        print("Sent recovery request to proxy")
-
-        client_socket.sendall(file_name.encode())
-        print(f"Sent file name: {file_name}")
-
-        response = client_socket.recv(1024).decode()
-
-        if response == "File recovered successfully.":
-            # Receber o arquivo do proxy
-            with open(file_name, "wb") as file:
-                data = client_socket.recv(1024)
-                while data:
-                    file.write(data)
-                    data = client_socket.recv(1024)
-
-            print("File recovered successfully.")
-        else:
-            print("File not found.")
-
-
-def main():
+def receiveMessage():
     while True:
-        print("Menu:")
-        print("1. Deposit file")
-        print("2. Recover file")
-        print("3. Exit")
-        choice = input("Select an option: ")
+        try:
+            message = client.recv(2048).decode('ascii')
+            if message == 'agent':
+                client.send(agent.encode('ascii'))
+            else:
+                print(message)
+        except:
+            print('[ERRO]')
 
-        if choice == "1":
-            file_name = input("Enter the file name: ")
-            tolerance = int(input("Enter the tolerance level: "))
-            deposit_file(file_name, tolerance)
-        elif choice == "2":
-            file_name = input("Enter the file name to recover: ")
-            recover_file(file_name)
-        elif choice == "3":
+def send_message(op,file_name,client_id,level):
+   chunk = op+"|"+file_name+"|"+str(client_id)+"|"+str(level)
+   client.send(chunk.encode('ascii'))
+
+
+client_id = str(uuid.uuid4())
+
+while True:
+    print("Menu:")
+    print("1. Depositar arquivo")
+    print("2. Recuperar arquivo")
+    print("3. Sair")
+    choice = int(input())
+
+    match choice:
+        case 1:
+            file_name = input("nome do arquivo:")
+            level = int(input("tolerância:"))
+            
+            receiver_thread = threading.Thread(target=receiveMessage,args=()) 
+            sender_thread = threading.Thread(target=send_message,args=("0",file_name,client_id,level))
+
+            receiver_thread.start()
+            sender_thread.start()
+        case 2:
+            file_name = input("nome do arquivo:")
+            
+            receiver_thread = threading.Thread(target=receiveMessage,args=()) 
+            sender_thread = threading.Thread(target=send_message,args=("1",file_name,client_id, 0))
+
+            receiver_thread.start()
+            sender_thread.start()
+        case 3:
             break
-        else:
-            print("Invalid choice.")
-
-
-if __name__ == "__main__":
-    main()
+        case _:
+            print(f'Operação não encontrada')
