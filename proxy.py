@@ -1,104 +1,102 @@
-# proxy.py
-
 import socket
 import threading
-import random
 
-PROXY_ADDRESS = ("localhost", 9000)
-SERVER_ADDRESSES = [("localhost", 8000)]
+HOST = "localhost"
+PORT = 8081
 
+# Criação do socket para comunicação TCP/IP
+server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+server.bind((HOST, PORT))
+server.listen()
 
-def handle_client(client_socket):
-    print("Handling client request")
+clients = []  # Lista de clientes conectados
+ids = []  # Lista de identificadores dos clientes
 
-    # Recebendo a requisição do cliente (Camada de Aplicação)
-    request = client_socket.recv(1024).decode().split()
-    print(request)
-    print(f"Received request type: {request[0]}")
+servers = []  # Lista de servidores conectados
+serversNames = []  # Lista de nomes dos servidores
 
-    if request[0] == "deposit":
-        server_socket = get_random_server_socket()
-        if server_socket:
-            # Enviando a requisição para o servidor (Camada de Transporte)
-            server_socket.sendall(b"deposit ")
+def globalMessage(message):
+    # Envio da mensagem para todos os servidores conectados
+    for server in servers:
+        try:
+            server.send(message)
+        except:
+            print("Erro ao enviar mensagem para um servidor")
 
-            file_name = request[1] + " "
-            server_socket.sendall(file_name.encode())
+def globalM(message):
+    # Envio da mensagem para todos os clientes conectados
+    for client in clients:
+        try:
+            client.send(message)
+        except:
+            print("Erro ao enviar mensagem para um cliente")
 
-            tolerance = request[2]
-            server_socket.sendall(tolerance.encode())
-
-            # Enviando o conteúdo do arquivo ao servidor (Camada de Transporte)
-            while True:
-                data = client_socket.recv(1024)
-                if not data:
-                    break
-                server_socket.sendall(data)
-
-            # Recebendo a resposta do servidor (Camada de Transporte)
-            response = server_socket.recv(1024).decode().strip()
-            client_socket.sendall(
-                response.encode()
-            )  # Enviando a resposta ao cliente (Camada de Transporte)
-        else:
-            client_socket.sendall(b"No server available.")
-
-    elif request[0] == "recovery":
-        server_socket = get_random_server_socket()
-        if server_socket:
-            # Enviando a requisição para o servidor (Camada de Transporte)
-            server_socket.sendall(b"recovery ")
-
-            file_name = request[1]
-            server_socket.sendall(file_name.encode())
-
-            # Recebendo a resposta do servidor (Camada de Transporte)
-            response = server_socket.recv(1024).decode().strip()
-            client_socket.sendall(
-                response.encode()
-            )  # Enviando a resposta ao cliente (Camada de Transporte)
-
-            if response == "File recovered successfully.":
-                # Enviando o arquivo de volta para o cliente (Camada de Transporte)
-                while True:
-                    data = server_socket.recv(1024)
-                    if not data:
-                        break
-                    client_socket.sendall(data)
-        else:
-            client_socket.sendall(b"No server available.")
-
-    client_socket.close()
-
-
-def get_random_server_socket():
-    if not SERVER_ADDRESSES:
-        return None
-
-    server_address = random.choice(SERVER_ADDRESSES)
-    server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    try:
-        # Estabelecendo a conexão com o servidor (Camada de Transporte)
-        server_socket.connect(server_address)
-        return server_socket
-    except ConnectionRefusedError:
-        print(f"Connection refused to server {server_address}")
-        SERVER_ADDRESSES.remove(server_address)
-        return get_random_server_socket()
-
-
-def main():
-    proxy_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    proxy_socket.bind(PROXY_ADDRESS)
-    proxy_socket.listen(1)
-    print("Proxy is running...")
-
+def handleMessages(client, agent):
     while True:
-        client_socket, client_address = proxy_socket.accept()
+        try:
+            if agent == "client":
+                # Recebimento de mensagem do cliente
+                receiveMessageFromClient = client.recv(1024).decode()
+                print("receiveMessageFromClient")
+                print(receiveMessageFromClient)
+                globalMessage(f"{receiveMessageFromClient}".encode())
+            elif agent == "server":
+                # Recebimento de mensagem do servidor
+                receiveMessageFromClient = client.recv(1024).decode()
+                print("receiveMessageFromClient")
+                print(receiveMessageFromClient)
+                globalM(f"{receiveMessageFromClient}".encode())
+        except:
+            client.close()
+            print("Erro ao lidar com as mensagens do cliente ou servidor")
 
-        # Iniciando uma nova thread para lidar com a requisição do cliente (Camada de Transporte)
-        threading.Thread(target=handle_client, args=(client_socket,)).start()
+
+def initialConnection():
+    print("Proxy inicializado. Aguardando conexões...")
+    while True:
+        try:
+            client, address = server.accept()
+            print(f"Nova conexão: {str(address)}")
+
+            # Envio da identificação do agente (cliente ou servidor)
+            client.send("agent".encode())
+            agent = client.recv(1024).decode()
+
+            if agent == "client":
+                # Adiciona o cliente à lista de clientes conectados
+                clients.append(client)
+                ids.append(agent)
+                # Cria uma thread para lidar com as mensagens do cliente
+                user_thread = threading.Thread(
+                    target=handleMessages,
+                    args=(
+                        client,
+                        agent,
+                    ),
+                )
+                user_thread.start()
+                print("Cliente conectado")
+            else:
+                # Adiciona o servidor à lista de servidores conectados
+                servers.append(client)
+                serversNames.append(agent)
+                # Cria uma thread para lidar com as mensagens do servidor
+                user_thread = threading.Thread(
+                    target=handleMessages,
+                    args=(
+                        client,
+                        agent,
+                    ),
+                )
+                user_thread.start()
+                print("Servidor conectado")
+        except:
+            print("Erro ao aceitar conexão")
+            pass
 
 
-if __name__ == "__main__":
-    main()
+try:
+    initialConnection()
+except:
+    print("Erro ao iniciar a conexão")
+    quit()

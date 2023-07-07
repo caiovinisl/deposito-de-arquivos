@@ -1,117 +1,109 @@
 import socket
-import os
+import threading
 import shutil
+import os
 
-SERVER_ADDRESS = ("localhost", 8000)
-DATA_DIR = "data/"
+HOST = "localhost"
+PORT = 8081
 
+client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+agent = "server"
 
-def handle_deposit(client_socket, filename, tolerance):
-    print("Handling deposit request")
+files = []
 
-    print(f"Received file name: {filename}")
-    print(f"Received tolerance: {tolerance}")
+def debug_print(message):
+    print(f"[{message}]")
 
-    file_path = os.path.join(DATA_DIR, filename)
-    print(f"File path: {file_path}")
-
-    # Camada de Aplicação (Aplicação -> Transporte)
-    # O arquivo é enviado pela camada de aplicação para a camada de transporte
-    with open(file_path, "wb") as file:
-        data = client_socket.recv(1024)
-        while data:
-            file.write(data)
-            data = client_socket.recv(1024)
-
-    # Camada de Aplicação (Transporte -> Rede)
-    # O arquivo é recebido e salvo no diretório especificado
-
-    # Criar as réplicas do arquivo
-    replicas = []
-    for i in range(tolerance):
-        replica_path = file_path + f".replica{i}"
-        shutil.copy(file_path, replica_path)
-        replicas.append(replica_path)
-
-    # Camada de Aplicação (Rede -> Enlace)
-    # As réplicas são criadas e armazenadas em diferentes camadas físicas
-
-    client_socket.sendall(b"Deposit completed.")
-    client_socket.sendall(b"File deposited successfully.")
-    client_socket.close()
+try:
+    client.connect((HOST, PORT))
+    print(f"Conectado com sucesso a {HOST}:{PORT}")
+except:
+    print(f"ERRO: Falha ao conectar a {HOST}:{PORT}")
 
 
-def handle_recovery(client_socket, filename):
-    print("Handling recovery request")
-
-    print(f"Received file name: {filename}")
-
-    file_path = os.path.join(DATA_DIR, filename)
-    print(f"File path: {file_path}")
-
-    # Verificar se existem réplicas do arquivo
-    replicas = [file_path] + [file_path + f".replica{i}" for i in range(10)]
-    valid_replicas = [replica for replica in replicas if os.path.exists(replica)]
-
-    if valid_replicas:
-        replica_path = valid_replicas[0]
-
-        # Camada de Aplicação (Enlace -> Rede)
-        # O arquivo é recuperado da camada física
-
-        # Enviar o arquivo de volta para o cliente
-        with open(replica_path, "rb") as file:
-            data = file.read(1024)
-            while data:
-                client_socket.send(data)
-                data = file.read(1024)
-
-        # Camada de Aplicação (Rede -> Transporte)
-        # O arquivo é enviado da camada de aplicação para a camada de transporte
-
-        client_socket.sendall(b"File recovered successfully.")
-    else:
-        client_socket.sendall(b"File not found.")
-
-    client_socket.close()
+def split_message(chunk):
+    array = chunk.split("|")
+    return array
 
 
-def main():
-    if not os.path.exists(DATA_DIR):
-        os.makedirs(DATA_DIR)
-
-    server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    server_socket.bind(SERVER_ADDRESS)
-    server_socket.listen(1)
-    print("Server is running...")
-
+def receive_message():
     while True:
-        client_socket, client_address = server_socket.accept()
 
-        # Camada de Aplicação (Transporte -> Rede)
-        # O cliente envia uma solicitação para o servidor
+        message = client.recv(1024).decode()  # Recebe dados da camada de transporte
+        debug_print(f"mensagem: {message}")
 
-        request = client_socket.recv(1024).decode().split()
-        print(request)
-        print(f"Received request type: {request[0]}")
-
-        if request[0] == "deposit":
-            # Camada de Aplicação (Aplicação -> Transporte)
-            # O servidor recebe a solicitação de depósito do cliente
-
-            handle_deposit(client_socket, request[1], request[2])
-        elif request[0] == "recovery":
-            # Camada de Aplicação (Aplicação -> Transporte)
-            # O servidor recebe a solicitação de recuperação do cliente
-
-            handle_recovery(client_socket, request[1])
+        if message == "agent":
+            client.send(agent.encode())  # Envia dados para a camada de transporte
         else:
-            # Camada de Aplicação (Aplicação -> Transporte)
-            # O servidor recebe uma solicitação inválida do cliente
+            message = split_message(message)
+            choice = int(message[0])
+            file_name = message[1]
+            level = int(message[2])
+            file_size = int(message[3])
 
-            client_socket.sendall(b"Invalid request.")
-            client_socket.close()
+            print("Operação iniciada: " + str(choice))
+            debug_print(str(message))
+
+            if choice == 1:
+                client.send(
+                    "Recebendo arquivo...".encode()
+                )  # Envia dados para a camada de transporte
+                files.append(file_name)
+
+                path = os.path.dirname(__file__)
+                file_path = os.path.join(path, "data", file_name)
+                with open(file_path, "wb") as file:
+                    count = 0
+                    while count <= (file_size / 1024):
+                        debug_print("Recebendo pedaço do arquivo")
+                        file_chunk = client.recv(
+                            1024
+                        )  # Recebe dados da camada de transporte
+                        file.write(file_chunk)
+                        count += 1
+
+                output = file_name + " salvo com sucesso"
+                client.send(output.encode())  # Envia dados para a camada de transporte
+
+                if level > 0:
+                    for i in range(level):
+                        dest_path = file_path + f".replica-{i + 1}"
+                        shutil.copy(file_path, dest_path)
+
+                    output = str(level) + " Replicas criadas com sucesso"
+                    client.send(
+                        output.encode()
+                    )  # Envia dados para a camada de transporte
+
+            elif choice == 2:
+                client.send(
+                    "Buscando arquivo...".encode()
+                )  # Envia dados para a camada de transporte
+
+                if file_name not in files:
+                    client.send(
+                        (file_name + " não encontrado").encode()
+                    )  # Envia dados para a camada de transporte
+                    continue
+
+                output = file_name + " encontrado com sucesso\n"
+                client.send(output.encode())  # Envia dados para a camada de transporte
+
+                client.send(
+                    "Restaurando...".encode()
+                )  # Envia dados para a camada de transporte
+
+                with open(file_path, "rb") as file:
+                    while True:
+                        data = file.read(1024)
+                        debug_print("Enviando pedaço do arquivo")
+                        if not data:
+                            break
+                        client.send(data)  # Envia dados para a camada de transporte
+
+                client.send(
+                    "Arquivo Restaurado!".encode()
+                )  # Envia dados para a camada de transporte
 
 
-if __name__ == "__main__":
-    main()
+receive_message()

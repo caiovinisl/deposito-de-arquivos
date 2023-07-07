@@ -1,3 +1,6 @@
 novoc.py
 novop.py
 novos.py
+
+data/*
+!data/.gitkeep
