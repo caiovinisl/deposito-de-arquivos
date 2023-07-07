@@ -63,11 +63,11 @@ $ git clone https://github.com/caiovinisl/deposito-de-arquivos.git
 # Acesse a pasta do projeto no terminal/cmd
 $ cd deposito-de-arquivos
 
-# Certifique-se de executar primeiro o servidor
-$ python server.py
-
-# Depois execute o proxy
+# Certifique-se de executar primeiro o proxy
 $ python proxy.py
+
+# Depois execute o servidor
+$ python server.py
 
 # Em seguida, execute o cliente
 $ python client.py
