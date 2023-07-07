@@ -73,8 +73,9 @@ def conexao_inicial():
     except:
       quit()
 
+
 try:
   conexao_inicial()
 except:
-  print('erro')
+  print('Erro ao iniciar conexão')
   quit()

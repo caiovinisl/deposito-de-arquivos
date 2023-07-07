@@ -7,7 +7,8 @@ HOST = "localhost"
 PORT = 8081
 
 agent = "client"
-client = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
+client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+
 
 def debug_print(message):
   print(f"[debug] | [{message}]")
@@ -49,6 +50,7 @@ def send_deposit_message(file_name,client_id,level, file_size):
 
 
 client_id = str(uuid.uuid4())
+
 
 def startup_menu():
   while True:
