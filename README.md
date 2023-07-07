@@ -45,9 +45,8 @@ Projeto desenvolvido durante a matéria MATA59 - Redes de Computadores da Univer
 - [x] Servidor
 - [x] Proxy
 - [x] Cliente
-	- [x] Depositar arquivos
-	- [x] Recuperar arquivos
-
+  - [x] Depositar arquivos
+  - [x] Recuperar arquivos
 
 ---
 
@@ -63,11 +62,11 @@ $ git clone https://github.com/caiovinisl/deposito-de-arquivos.git
 # Acesse a pasta do projeto no terminal/cmd
 $ cd deposito-de-arquivos
 
-# Certifique-se de executar primeiro o servidor
-$ python server.py
-
-# Depois execute o proxy
+# Certifique-se de executar primeiro o proxy
 $ python proxy.py
+
+# Depois execute o server
+$ python server.py
 
 # Em seguida, execute o cliente
 $ python client.py
