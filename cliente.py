@@ -15,6 +15,8 @@ def debug_print(message):
 
 def receiveMessage():
   while True:
+    if client.fileno() == -1:
+      break
     try:
       message = client.recv(1024).decode()
       if message == "agent":
@@ -24,7 +26,7 @@ def receiveMessage():
       else:
         print(f"message: {message}")
     except:
-      print('[ERRO]')
+      print('Exit')
 
 def send_recover_message(file_name,client_id,level, file_size):
   chunk = "2"+"|"+file_name+"|"+str(level)+"|"+str(file_size)
@@ -79,8 +81,11 @@ def startup_menu():
 
       receiver_thread.start()
       sender_thread.start()
+      receiver_thread.join(0.5)
+      sender_thread.join(0.5)
     if choice ==  3:
-      quit()
+      client.close()
+      break
     if choice not in (1,2,3):
       print(f'Operação não encontrada')
 
