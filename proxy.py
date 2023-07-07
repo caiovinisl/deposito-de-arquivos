@@ -17,14 +17,11 @@ ids = []
 servidores = []
 nomes_servidores = []
 
-# Função para enviar mensagem para todos os servidores
-def mensagem_global(message):
-  txt = servidores[-1]
-  txt.send(message)
-
-# Função para enviar mensagem para todos os clientes
-def mensagem_global_clientes(message):
-  txt = clientes[-1]
+def mensagem_global(message, agent):
+  if agent == 'server':
+    txt = servidores[-1]
+  else:
+    txt = clientes[-1]
   txt.send(message)
 
 # Função para lidar com as mensagens recebidas dos clientes e servidores
@@ -37,14 +34,14 @@ def lidar_com_mensagens(client, agent):
         print("receber_mensagem_do_cliente")
         print(receber_mensagem_do_cliente)
         # Envia mensagem para todos os servidores
-        mensagem_global(f'{receber_mensagem_do_cliente}'.encode())
+        mensagem_global(f'{receber_mensagem_do_cliente}'.encode(), 'server')
       elif agent == "server":
         # Recebe mensagem do servidor
         receber_mensagem_do_cliente = client.recv(1024).decode()
         print("receber_mensagem_do_cliente")
         print(receber_mensagem_do_cliente)
         # Envia mensagem para todos os clientes
-        mensagem_global_clientes(f'{receber_mensagem_do_cliente}'.encode())
+        mensagem_global(f'{receber_mensagem_do_cliente}'.encode(), 'client')
     except:
       client.close()
 

@@ -10,7 +10,7 @@ agent = "client"
 client = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
 
 def debug_print(message):
-    print(f"[debug] | [{message}]")
+  print(f"[debug] | [{message}]")
 
 
 def receiveMessage():
@@ -69,6 +69,8 @@ def startup_menu():
 
       receiver_thread.start()
       sender_thread.start()
+      receiver_thread.join(0.5)
+      sender_thread.join(0.5)
     if choice == 2:
       file_name = input("Nome do arquivo: ")
       
@@ -78,7 +80,7 @@ def startup_menu():
       receiver_thread.start()
       sender_thread.start()
     if choice ==  3:
-      break
+      quit()
     if choice not in (1,2,3):
       print(f'Operação não encontrada')
 
@@ -90,7 +92,6 @@ def main():
     debug_print(f"host connected: ({HOST}:{PORT})")
     startup_menu()
   except:
-    print("Erro ao conectar ao host")
     client.close()
 
 if __name__ == "__main__":
