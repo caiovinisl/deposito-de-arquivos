@@ -11,10 +11,8 @@ agent = "server"
 
 files = []
 
-
 def debug_print(message):
     print(f"[{message}]")
-
 
 try:
     client.connect((HOST, PORT))
@@ -30,6 +28,7 @@ def split_message(chunk):
 
 def receive_message():
     while True:
+
         message = client.recv(1024).decode()  # Recebe dados da camada de transporte
         debug_print(f"mensagem: {message}")
 

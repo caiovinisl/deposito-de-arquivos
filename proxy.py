@@ -15,7 +15,6 @@ ids = []  # Lista de identificadores dos clientes
 servers = []  # Lista de servidores conectados
 serversNames = []  # Lista de nomes dos servidores
 
-
 def globalMessage(message):
     # Envio da mensagem para todos os servidores conectados
     for server in servers:
@@ -24,7 +23,6 @@ def globalMessage(message):
         except:
             print("Erro ao enviar mensagem para um servidor")
 
-
 def globalM(message):
     # Envio da mensagem para todos os clientes conectados
     for client in clients:
@@ -32,7 +30,6 @@ def globalM(message):
             client.send(message)
         except:
             print("Erro ao enviar mensagem para um cliente")
-
 
 def handleMessages(client, agent):
     while True:
