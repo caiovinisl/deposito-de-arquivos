@@ -3,107 +3,118 @@ import threading
 import shutil
 import os
 
+# Configurações do servidor
 HOST = "localhost"
 PORT = 8081
 
+# Criação do socket
 client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+
+# Identificador do agente (servidor)
 agent = "server"
 
+# Lista para armazenar os nomes dos arquivos recebidos
 files = []
 
+# Função para imprimir mensagens de depuração
 def debug_print(message):
-    print(f"[{message}]")
+  print(f"[debug] | [{message}]")
 
 try:
-    client.connect((HOST, PORT))
-    print(f"Conectado com sucesso a {HOST}:{PORT}")
+  # Conecta ao servidor
+  client.connect((HOST, PORT))
+  print(f'Conexão estabelecida com sucesso em {HOST}:{PORT}')
 except:
-    print(f"ERRO: Falha ao conectar a {HOST}:{PORT}")
-
+  print(f'ERRO: Verifique o host')
 
 def split_message(chunk):
-    array = chunk.split("|")
-    return array
+  array = chunk.split('|')
+  return array
 
-
+# Função para receber mensagens no servidor
 def receive_message():
-    while True:
+  while True:
+    try:
+      message = client.recv(1024).decode()
+      debug_print(f"message: {message}")
 
-        message = client.recv(1024).decode()  # Recebe dados da camada de transporte
-        debug_print(f"mensagem: {message}")
+      # Verifica se a mensagem é uma solicitação para identificar o agente
+      if message == 'agent':
+        client.send(agent.encode())
+      else:
+        # Divide a mensagem recebida em partes
+        message = split_message(message)
+        choice = int(message[0])  # Opção escolhida
+        file_name = message[1]   # Nome do arquivo
+        level = int(message[2])  # Nível de replicação
+        file_size = int(message[3])  # Tamanho do arquivo
 
-        if message == "agent":
-            client.send(agent.encode())  # Envia dados para a camada de transporte
-        else:
-            message = split_message(message)
-            choice = int(message[0])
-            file_name = message[1]
-            level = int(message[2])
-            file_size = int(message[3])
+        print("Operação iniciada: " + str(choice))
+        debug_print(str(message))
 
-            print("Operação iniciada: " + str(choice))
-            debug_print(str(message))
+        if choice == 1:
+          client.send("Recebendo arquivo...".encode())
 
-            if choice == 1:
-                client.send(
-                    "Recebendo arquivo...".encode()
-                )  # Envia dados para a camada de transporte
-                files.append(file_name)
+          # Adiciona o nome do arquivo à lista de arquivos recebidos
+          files.append(file_name)
 
-                path = os.path.dirname(__file__)
-                file_path = os.path.join(path, "data", file_name)
-                with open(file_path, "wb") as file:
-                    count = 0
-                    while count <= (file_size / 1024):
-                        debug_print("Recebendo pedaço do arquivo")
-                        file_chunk = client.recv(
-                            1024
-                        )  # Recebe dados da camada de transporte
-                        file.write(file_chunk)
-                        count += 1
+          # Obtém o caminho do diretório atual
+          path = os.path.dirname(__file__)
 
-                output = file_name + " salvo com sucesso"
-                client.send(output.encode())  # Envia dados para a camada de transporte
+          # Constrói o caminho completo do arquivo a ser salvo
+          file_path = os.path.join(path, "data", file_name)
 
-                if level > 0:
-                    for i in range(level):
-                        dest_path = file_path + f".replica-{i + 1}"
-                        shutil.copy(file_path, dest_path)
+          with open(file_path, "wb") as file:
+            count = 0
+            while count <= (file_size / 1024):
+              debug_print('recebendo fragmento de arquivo')
+              file_chunk = client.recv(1024)
+              file.write(file_chunk)
+              count += 1
 
-                    output = str(level) + " Replicas criadas com sucesso"
-                    client.send(
-                        output.encode()
-                    )  # Envia dados para a camada de transporte
+          # Envia uma mensagem de confirmação
+          output = file_name + ' salvo com sucesso'
+          client.send(output.encode())
 
-            elif choice == 2:
-                client.send(
-                    "Buscando arquivo...".encode()
-                )  # Envia dados para a camada de transporte
+          # Se o nível de replicação for maior que 0, cria réplicas do arquivo
+          if level > 0:
+            for i in range(level):
+              dest_path = file_path + f".replica-{i + 1}"
+              shutil.copy(file_path, dest_path)
 
-                if file_name not in files:
-                    client.send(
-                        (file_name + " não encontrado").encode()
-                    )  # Envia dados para a camada de transporte
-                    continue
+            # Envia uma mensagem indicando a criação das réplicas
+            output = str(level) + ' Réplicas criadas com sucesso'
+            client.send(output.encode())
 
-                output = file_name + " encontrado com sucesso\n"
-                client.send(output.encode())  # Envia dados para a camada de transporte
+        elif choice == 2:
+          client.send("Buscando arquivo...".encode())
 
-                client.send(
-                    "Restaurando...".encode()
-                )  # Envia dados para a camada de transporte
+          # Verifica se o arquivo solicitado está na lista de arquivos recebidos
+          if file_name not in files:
+            client.send((file_name + ' não encontrado').encode())
+            continue
 
-                with open(file_path, "rb") as file:
-                    while True:
-                        data = file.read(1024)
-                        debug_print("Enviando pedaço do arquivo")
-                        if not data:
-                            break
-                        client.send(data)  # Envia dados para a camada de transporte
+          # Envia uma mensagem indicando que o arquivo foi encontrado
+          output = file_name + " encontrado com sucesso"
+          client.send(output.encode())
 
-                client.send(
-                    "Arquivo Restaurado!".encode()
-                )  # Envia dados para a camada de transporte
+          # Envia uma mensagem indicando que a restauração do arquivo está em andamento
+          client.send("Restaurando...".encode())
 
+          with open(file_path, "rb") as file:
+            while True:
+              data = file.read(1024)
+              debug_print('enviando fragmento de arquivo')
+              if not data:
+                break
+
+              client.send(data)
+
+          # Envia uma mensagem indicando que a restauração do arquivo foi concluída
+          client.send("Arquivo Restaurado!".encode())
+
+    except:
+      print('[ERRO]')
+      quit()
 
 receive_message()

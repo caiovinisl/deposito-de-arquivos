@@ -64,7 +64,7 @@ $ cd deposito-de-arquivos
 # Certifique-se de executar primeiro o proxy
 $ python proxy.py
 
-# Depois execute o server
+# Depois execute o servidor
 $ python server.py
 
 # Em seguida, execute o cliente

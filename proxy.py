@@ -4,99 +4,78 @@ import threading
 HOST = "localhost"
 PORT = 8081
 
-# Criação do socket para comunicação TCP/IP
-server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-server.bind((HOST, PORT))
-server.listen()
+# Cria o socket do servidor
+servidor = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+servidor.bind((HOST, PORT))
+servidor.listen()
 
-clients = []  # Lista de clientes conectados
-ids = []  # Lista de identificadores dos clientes
+# Lista de clientes conectados
+clientes = []
+ids = []
 
-servers = []  # Lista de servidores conectados
-serversNames = []  # Lista de nomes dos servidores
+# Lista de servidores conectados
+servidores = []
+nomes_servidores = []
 
-def globalMessage(message):
-    # Envio da mensagem para todos os servidores conectados
-    for server in servers:
-        try:
-            server.send(message)
-        except:
-            print("Erro ao enviar mensagem para um servidor")
+def mensagem_global(message, agent):
+  if agent == 'server':
+    txt = servidores[-1]
+  else:
+    txt = clientes[-1]
+  txt.send(message)
 
-def globalM(message):
-    # Envio da mensagem para todos os clientes conectados
-    for client in clients:
-        try:
-            client.send(message)
-        except:
-            print("Erro ao enviar mensagem para um cliente")
+# Função para lidar com as mensagens recebidas dos clientes e servidores
+def lidar_com_mensagens(client, agent):
+  while True:
+    try:
+      if agent == "client":
+        # Recebe mensagem do cliente
+        receber_mensagem_do_cliente = client.recv(1024).decode()
+        print("receber_mensagem_do_cliente")
+        print(receber_mensagem_do_cliente)
+        # Envia mensagem para todos os servidores
+        mensagem_global(f'{receber_mensagem_do_cliente}'.encode(), 'server')
+      elif agent == "server":
+        # Recebe mensagem do servidor
+        receber_mensagem_do_cliente = client.recv(1024).decode()
+        print("receber_mensagem_do_cliente")
+        print(receber_mensagem_do_cliente)
+        # Envia mensagem para todos os clientes
+        mensagem_global(f'{receber_mensagem_do_cliente}'.encode(), 'client')
+    except:
+      client.close()
 
-def handleMessages(client, agent):
-    while True:
-        try:
-            if agent == "client":
-                # Recebimento de mensagem do cliente
-                receiveMessageFromClient = client.recv(1024).decode()
-                print("receiveMessageFromClient")
-                print(receiveMessageFromClient)
-                globalMessage(f"{receiveMessageFromClient}".encode())
-            elif agent == "server":
-                # Recebimento de mensagem do servidor
-                receiveMessageFromClient = client.recv(1024).decode()
-                print("receiveMessageFromClient")
-                print(receiveMessageFromClient)
-                globalM(f"{receiveMessageFromClient}".encode())
-        except:
-            client.close()
-            print("Erro ao lidar com as mensagens do cliente ou servidor")
+# Função para estabelecer a conexão inicial com os clientes e servidores
+def conexao_inicial():
+  while True:
+    try:
+      # Aceita a conexão de um cliente
+      cliente, endereco = servidor.accept()
+      print(f"Nova Conexão: {str(endereco)}")
 
+      cliente.send('agent'.encode())
+      agente = cliente.recv(1024).decode()
 
-def initialConnection():
-    print("Proxy inicializado. Aguardando conexões...")
-    while True:
-        try:
-            client, address = server.accept()
-            print(f"Nova conexão: {str(address)}")
-
-            # Envio da identificação do agente (cliente ou servidor)
-            client.send("agent".encode())
-            agent = client.recv(1024).decode()
-
-            if agent == "client":
-                # Adiciona o cliente à lista de clientes conectados
-                clients.append(client)
-                ids.append(agent)
-                # Cria uma thread para lidar com as mensagens do cliente
-                user_thread = threading.Thread(
-                    target=handleMessages,
-                    args=(
-                        client,
-                        agent,
-                    ),
-                )
-                user_thread.start()
-                print("Cliente conectado")
-            else:
-                # Adiciona o servidor à lista de servidores conectados
-                servers.append(client)
-                serversNames.append(agent)
-                # Cria uma thread para lidar com as mensagens do servidor
-                user_thread = threading.Thread(
-                    target=handleMessages,
-                    args=(
-                        client,
-                        agent,
-                    ),
-                )
-                user_thread.start()
-                print("Servidor conectado")
-        except:
-            print("Erro ao aceitar conexão")
-            pass
+      if agente == "client":
+        # Adiciona o cliente à lista de clientes
+        clientes.append(cliente)
+        ids.append(agente)
+        # Inicia uma thread para lidar com as mensagens do cliente
+        thread_usuario = threading.Thread(target=lidar_com_mensagens, args=(cliente, agente,))
+        thread_usuario.start()
+      else:
+        # Adiciona o servidor à lista de servidores
+        servidores.append(cliente)
+        nomes_servidores.append(agente)
+        # Inicia uma thread para lidar com as mensagens do servidor
+        thread_usuario = threading.Thread(target=lidar_com_mensagens, args=(cliente, agente,))
+        thread_usuario.start()
+    except:
+      quit()
 
 
 try:
-    initialConnection()
+  conexao_inicial()
 except:
-    print("Erro ao iniciar a conexão")
-    quit()
+  print('Erro ao iniciar conexão')
+  quit()
