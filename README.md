@@ -38,8 +38,8 @@
 Projeto desenvolvido durante a matéria MATA59 - Redes de Computadores da Universidade Federal da Bahia pelo professor Gustavo Bittencurt.
 
 A aplicação implementada segue o modelo cliente-servidor e funciona em dois modos:
-i) modo depósito
-ii) modo recuperação
+- i) modo depósito
+- ii) modo recuperação
 
 No modo depósito, o cliente informa ao servidor o arquivo a ser armazenado e o nível de tolerância a falhas requerido, que expressa, em última instância a quantidade de réplicas que serão armazenadas. O servidor então guarda as “N” cópias do arquivo em locais (dispositivos) diferentes.
 
