@@ -59,10 +59,10 @@ aumenta ou diminui a quantidade de réplicas conforme a última solicitação.
   - [x] Atua como um intermediário encaminhando as mensagens entre os componentes
   - [x] Encaminhamento é realizado por meio de sockets e endereços IP 
 - [x] Cliente
-  - [x] Depositar arquivos
-  	- [x] Aumentar a quantidade de réplicas
-   	- [x] Diminuir a quantidade de réplicas
-  - [x] Recuperar arquivos
+  - [x] Deposita arquivos
+  	- [x] Aumenta a quantidade de réplicas
+   	- [x] Diminui a quantidade de réplicas
+  - [x] Recupera arquivos
   	- [x] Informa o nome do arquivo que deverá ser recuperado
 
 ---
