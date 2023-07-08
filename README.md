@@ -53,10 +53,17 @@ aumenta ou diminui a quantidade de réplicas conforme a última solicitação.
 ## ⚙️ Funcionalidades
 
 - [x] Servidor
+  - [x] Guarda as “N” cópias do arquivo
+  - [x] Encontra o arquivo e devolve ao cliente
 - [x] Proxy
+  - [x] Atua como um intermediário encaminhando as mensagens entre os componentes
+  - [x] Encaminhamento é realizado por meio de sockets e endereços IP 
 - [x] Cliente
   - [x] Depositar arquivos
+  	- [x] Aumentar a quantidade de réplicas
+   	- [x] Diminuir a quantidade de réplicas
   - [x] Recuperar arquivos
+  	- [x] Informa o nome do arquivo que deverá ser recuperado
 
 ---
 
